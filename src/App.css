@@ -2,6 +2,38 @@
   text-align: center;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+@media (max-width: 1024px) {
+  #form-section {
+    order: 1; /* Move the form above the second table */
+  }
+  #table-section {
+    order: 0;
+  }
+  #records-section {
+    order: 2;
+  }
+
+  .custom-table {
+    table-layout: auto; /* Adjust column width automatically */
+  }
+
+  .row {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+  }
+}
+
+/* Adjust container margin and padding */
+.container, .container-fluid {
+  padding: 8px;
+  margin: 8px;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;

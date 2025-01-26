@@ -1,21 +1,36 @@
-import React, { useState } from 'react';
-import SchemaMetadataList from './components/SchemaMetadataList';
+import React from 'react';
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import './App.css';
+import About from './components/About';
+import Footer from './components/Footer';
+import Navbar from './components/Navbar';
+import VirtualSchemaManager from './components/VirtualSchemaManager';
 
 function App() {
-    const [message, setMessage] = useState('');
+    // const [message, setMessage] = useState('');
 
-    // useEffect(() => {
-    //     axios.get('/api/hello')
-    //         .then(response => setMessage(response.data))
-    //         .catch(error => console.error(error));
-    // }, []);
-
+    // return (
+    //     <div>
+    //         <VirtualSchemaManager/>
+    //     </div>
+    // );
     return (
-        <div>
-            <h1>Virtual Schema App</h1>
-            <SchemaMetadataList/>
-        </div>
-    );
+        <Router>
+          <div style={{
+            margin: "0", // Eliminate extra margins
+            padding: "0", // Eliminate extra padding
+          }}>
+            <Navbar />
+            <div style={{ margin: "8px", padding: "8px" }}>
+              <Routes>
+                <Route path="/" element={<VirtualSchemaManager/>} />
+                <Route path="/about" element={<About />} />
+              </Routes>
+            </div>
+            <Footer/>
+          </div>
+        </Router>
+      );
 }
 
 export default App;
