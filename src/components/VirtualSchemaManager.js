@@ -16,7 +16,7 @@ function VirtualSchemaManager() {
 
   // A single function to fetch both metadata and field values
   const fetchAllData = () => {
-    let newUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/login`;
+    let newUrl = `${process.env.REACT_APP_FRONTEND_BASE_URL}/login`;
     Promise.all([
       axios.get(`${baseUrl}/api/schema-metadata`, { withCredentials: true }),
       axios.get(`${baseUrl}/api/virtual-field-values`, { withCredentials: true })
