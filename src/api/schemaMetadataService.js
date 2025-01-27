@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = '/api/schema-metadata'; // Assuming you have "proxy": "http://localhost:8080" in package.json
+const BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL + '/api/schema-metadata';
 
 export const getAllMetadata = () => {
   return axios.get(BASE_URL, { withCredentials: true });

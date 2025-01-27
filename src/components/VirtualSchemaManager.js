@@ -7,6 +7,7 @@ function VirtualSchemaManager() {
   // All data stored here
   const [metadataList, setMetadataList] = useState([]);
   const [fieldValues, setFieldValues] = useState([]);
+  let baseUrl = process.env.REACT_APP_BACKEND_BASE_URL;
 
   // Fetch all data once on mount
   useEffect(() => {
@@ -15,27 +16,28 @@ function VirtualSchemaManager() {
 
   // A single function to fetch both metadata and field values
   const fetchAllData = () => {
+    let newUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/login`;
     Promise.all([
-      axios.get('/api/schema-metadata', { withCredentials: true }),
-      axios.get('/api/virtual-field-values', { withCredentials: true })
+      axios.get(`${baseUrl}/api/schema-metadata`, { withCredentials: true }),
+      axios.get(`${baseUrl}/api/virtual-field-values`, { withCredentials: true })
     ])
     .then(([metaRes, fvRes]) => {
       if (!Array.isArray(metaRes.data)) {
         console.log("Received non-array from /api/schema-metadata, possibly the login page. Redirecting to login.");
-        window.location.href = "http://localhost:8080/login";
+        window.location.href = newUrl;
         return;
       }
       setMetadataList(metaRes.data);
       if (!Array.isArray(fvRes.data)) {
         console.log("Received non-array from /api/virtual-field-values, possibly the login page. Redirecting to login.");
-        window.location.href = "http://localhost:8080/api/login";
+        window.location.href = newUrl;
         return;
       }
       setFieldValues(fvRes.data);
     })
     .catch(error => {
       if (error.response && error.response.status === 302) {
-        window.location.href = 'http://localhost:8080/api/login';
+        window.location.href = newUrl;
       } else {
         console.error('Error fetching data:', error);
       }
@@ -46,7 +48,7 @@ function VirtualSchemaManager() {
   // CRUD FOR SCHEMA METADATA
   // --------------
   const createSchemaField = (newField) => {
-    return axios.post('/api/schema-metadata', newField, { withCredentials: true })
+    return axios.post(`${baseUrl}/api/schema-metadata`, newField, { withCredentials: true })
       .then(() => {
         // Re-fetch or do a partial update
         fetchAllData();
@@ -54,7 +56,7 @@ function VirtualSchemaManager() {
   };
 
   const deleteSchemaField = (id) => {
-    return axios.delete(`/api/schema-metadata/${id}`, { withCredentials: true })
+    return axios.delete(`${baseUrl}/api/schema-metadata/${id}`, { withCredentials: true })
       .then(() => {
         fetchAllData();
       });
@@ -64,7 +66,7 @@ function VirtualSchemaManager() {
     // "id" is the primary key of the schema_metadata record
     // "updatedField" is an object containing the new values (objectName, fieldName, dataType, createdByName)
 
-    return axios.put(`/api/schema-metadata/${id}`, updatedField, { withCredentials: true })
+    return axios.put(`${baseUrl}/api/schema-metadata/${id}`, updatedField, { withCredentials: true })
       .then(() => {
         // After a successful update, refetch metadata to keep everything in sync
         fetchAllData();
@@ -79,21 +81,21 @@ function VirtualSchemaManager() {
   // CRUD FOR VIRTUAL FIELD VALUES
   // --------------
   const createVirtualFieldValue = (data) => {
-    return axios.post('/api/virtual-field-values', data, { withCredentials: true })
+    return axios.post(`${baseUrl}/api/virtual-field-values`, data, { withCredentials: true })
       .then(() => {
         fetchAllData();
       });
   };
 
   const updateVirtualFieldValue = (id, data) => {
-    return axios.put(`/api/virtual-field-values/${id}`, data, { withCredentials: true })
+    return axios.put(`${baseUrl}/api/virtual-field-values/${id}`, data, { withCredentials: true })
       .then(() => {
         fetchAllData();
       });
   };
 
   const deleteRecordById = (recordId) => {
-    return axios.delete(`/api/virtual-field-values/record/${recordId}`, { withCredentials: true })
+    return axios.delete(`${baseUrl}/api/virtual-field-values/record/${recordId}`, { withCredentials: true })
       .then(() => {
         fetchAllData();
       });
