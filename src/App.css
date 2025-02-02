@@ -7,7 +7,7 @@ html, body {
   padding: 0;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
   #form-section {
     order: 1; /* Move the form above the second table */
   }

@@ -16,27 +16,41 @@ function VirtualSchemaManager() {
 
   // A single function to fetch both metadata and field values
   const fetchAllData = () => {
-    let newUrl = `${process.env.REACT_APP_FRONTEND_BASE_URL}/login`;
+    let newUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/login`;
     Promise.all([
       axios.get(`${baseUrl}/api/schema-metadata`, { withCredentials: true }),
       axios.get(`${baseUrl}/api/virtual-field-values`, { withCredentials: true })
     ])
     .then(([metaRes, fvRes]) => {
-      if (!Array.isArray(metaRes.data)) {
-        console.log("Received non-array from /api/schema-metadata, possibly the login page. Redirecting to login.");
+      if (typeof metaRes.data === "string" && metaRes.data.includes("<!DOCTYPE html")) {
         window.location.href = newUrl;
         return;
-      }
-      setMetadataList(metaRes.data);
-      if (!Array.isArray(fvRes.data)) {
-        console.log("Received non-array from /api/virtual-field-values, possibly the login page. Redirecting to login.");
-        window.location.href = newUrl;
+      } else if (Array.isArray(metaRes.data)) {
+        setMetadataList(metaRes.data);
+      } else {
+        console.log("Unexpected data type from /api/schema-metadata:");
+        console.log("Type:", typeof metaRes.data);
+        console.log("Raw data:", metaRes.data);
+        console.log("Stringified data:", JSON.stringify(metaRes.data));
         return;
       }
-      setFieldValues(fvRes.data);
+    
+      if (typeof fvRes.data === "string" && fvRes.data.includes("<!DOCTYPE html")) {
+        window.location.href = newUrl;
+        return;
+      } else if (Array.isArray(fvRes.data)) {
+        setFieldValues(fvRes.data);
+      } else {
+        console.log("Unexpected data type from /api/virtual-field-values:");
+        console.log("Type:", typeof fvRes.data);
+        console.log("Raw data:", fvRes.data);
+        console.log("Stringified data:", JSON.stringify(fvRes.data));
+        return;
+      }
     })
     .catch(error => {
       if (error.response && error.response.status === 302) {
+        console.error('302 redirect. Changing window to login page');
         window.location.href = newUrl;
       } else {
         console.error('Error fetching data:', error);
@@ -101,6 +115,20 @@ function VirtualSchemaManager() {
       });
   };
 
+  const changeDataTypeByMetadataId = (metadataId) => {
+    return axios.get(`${baseUrl}/api/virtual-field-values/mass-type-change/${metadataId}`, { withCredentials: true })
+      .then(() => {
+        fetchAllData();
+      });
+  }
+
+  const truncateFieldLengthByMetadataId = (metadataId, newLength) => {
+    return axios.get(`${baseUrl}/api/virtual-field-values/mass-truncate/${metadataId}/${newLength}`, { withCredentials: true })
+    .then(() => {
+      fetchAllData();
+    });
+  }
+
   // Alternatively, you can pass the entire object or more granular functions.
   // Some people prefer to do partial state updates rather than re-fetch from server each time.
   // For simplicity, we do a full fetchAllData() after each change.
@@ -113,6 +141,8 @@ function VirtualSchemaManager() {
         onCreateField={createSchemaField}
         onDeleteField={deleteSchemaField}
         onUpdateField={onUpdateField}
+        onDecreaseMaxLength={truncateFieldLengthByMetadataId}
+        onChangeTypeToNumber={changeDataTypeByMetadataId}
       />
 
       <VirtualRecords

@@ -10,9 +10,6 @@ function VirtualRecords({
   const [showAddForm, setShowAddForm] = useState(false);
   const [newRecordValues, setNewRecordValues] = useState({});
 
-  const [pendingRequests, setPendingRequests] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   // Editing state
   const [editingRecordId, setEditingRecordId] = useState(null);
   const [editRecordValues, setEditRecordValues] = useState({}); // { [schemaMetadataId]: { vfvId, value } }
@@ -23,18 +20,6 @@ function VirtualRecords({
 
   // Assume all share the same objectName
   const objectName = metadataList.length > 0 ? metadataList[0].objectName : 'Unknown';
-
-  const getMaxNumber = (maxLength) => {
-    if (maxLength >= 12) {
-      return 999999999999;
-    } else {
-      let finalMaxNumber = '';
-      for (let i = 0; i < maxLength; i++) {
-        finalMaxNumber += '9';
-      }
-      return parseInt(finalMaxNumber);
-    }
-  }
 
   // ------------------
   // ADD NEW RECORD
@@ -86,7 +71,7 @@ function VirtualRecords({
   // -------------------
   const handleOpenEditForm = (recordId) => {
     setEditingRecordId(recordId);
-
+    
     // Build a map for the existing field values
     // Key: schemaMetadataId; Value: { vfvId, value }
     const currentValues = {};
@@ -107,16 +92,13 @@ function VirtualRecords({
     setShowEditForm(true);
   };
 
-  // Close Edit Form
   const handleCloseEditForm = () => {
     setShowEditForm(false);
     setEditingRecordId(null);
     setEditRecordValues({});
   };
 
-  // Handle Input Change for Edit
   const handleChangeEditValue = (schemaId, val) => {
-    val = `${val}`;
     setEditRecordValues(prev => ({
       ...prev,
       [schemaId]: {
@@ -126,56 +108,37 @@ function VirtualRecords({
     }));
   };
 
-  // Save Edited Record
-  const handleSaveEditRecord = async () => {
-    if (isSubmitting) return; // Prevent duplicate submissions
-    setIsSubmitting(true);
+  const handleSaveEditRecord = () => {
+    // For each field in editRecordValues:
+    // If we have a vfvId, call onUpdateValue
+    // If vfvId is null, call onCreateValue
+    const updatePromises = Object.entries(editRecordValues).map(([schemaId, data]) => {
+      const { vfvId, value } = data;
+      if (!vfvId) {
+        // This field didn't exist, so create a new vfv
+        return onCreateValue({
+          schemaMetadataId: parseInt(schemaId, 10),
+          recordId: editingRecordId,
+          value
+        });
+      } else {
+        // Update existing field
+        return onUpdateValue(vfvId, {
+          schemaMetadataId: parseInt(schemaId, 10),
+          recordId: editingRecordId,
+          value
+        });
+      }
+    });
 
-    const updatePromises = Object.entries(editRecordValues)
-      .filter(([schemaId, data]) => {
-        const oldValueObj = fieldValues.find(
-          fv => fv.recordId === editingRecordId && fv.schemaMetadataId === parseInt(schemaId, 10)
-        );
-        const oldValue = oldValueObj ? oldValueObj.value : null;
-        const newValue = data.value;
-
-        if (oldValue === newValue) {
-          return false;
-        }
-        return true;
+    Promise.all(updatePromises)
+      .then(() => {
+        setShowEditForm(false);
+        setEditingRecordId(null);
+        setEditRecordValues({});
       })
-      .map(async ([schemaId, data]) => {
-        setPendingRequests(prev => prev + 1); // Start tracking request
-
-        const { vfvId, value } = data;
-        try {
-          const result = vfvId
-            ? await onUpdateValue(vfvId, {
-              schemaMetadataId: parseInt(schemaId, 10),
-              recordId: editingRecordId,
-              value,
-            })
-            : await onCreateValue({
-              schemaMetadataId: parseInt(schemaId, 10),
-              recordId: editingRecordId,
-              value,
-            });
-        } catch (error) {
-          console.error(`Update failed for schemaId ${schemaId}`, error);
-        } finally {
-          setPendingRequests(prev => prev - 1); // Decrease counter when request is done
-        }
-      });
-
-    await Promise.all(updatePromises); // Ensure all requests finish before proceeding
-
-    setIsSubmitting(false); // Allow new submissions
-    setShowEditForm(false);
-    setEditingRecordId(null);
-    setEditRecordValues({});
+      .catch(err => console.error('Error updating record:', err));
   };
-
-
 
   // -------------------
   // DELETE ENTIRE RECORD
@@ -199,8 +162,8 @@ function VirtualRecords({
           </button>
         </div>
       </div>
-
-
+  
+  
       {/* RECORD TABLE */}
       <table className="table table-bordered table-hover">
         <thead className="thead-light">
@@ -242,7 +205,7 @@ function VirtualRecords({
           ))}
         </tbody>
       </table>
-
+  
       {/* ADD NEW RECORD MODAL */}
       {showAddForm && (
         <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
@@ -256,39 +219,32 @@ function VirtualRecords({
                   onClick={handleCloseAddForm}
                 ></button>
               </div>
-              <div>
-                <form onSubmit={handleCreateNewRecord}>
-                  <div className="modal-body" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                    {metadataList.map(md => (
-                      <div key={md.id} className="mb-3">
-                        <label className="form-label">{md.fieldName}: </label>
-                        <input
-                          type={md.dataType === "NUMBER" ? "number" : "text"}
-                          className="form-control"
-                          value={newRecordValues[md.id] || ''}
-                          onChange={e => handleChangeNewValue(md.id, `${e.target.value}`)}
-                          required={md.requiredField}
-                          maxLength={md.dataType === "TEXT" ? md.maxLength : undefined}
-                          max={md.dataType === "NUMBER" ? getMaxNumber(md.maxLength) : undefined}
-                        />
-                      </div>
-                    ))}
+              <div className="modal-body" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {metadataList.map(md => (
+                  <div key={md.id} className="mb-3">
+                    <label className="form-label">{md.fieldName}: </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={newRecordValues[md.id] || ''}
+                      onChange={e => handleChangeNewValue(md.id, e.target.value)}
+                    />
                   </div>
-                  <div className="modal-footer">
-                    <button
-                      type="submit"
-                      className="btn btn-success"
-                    >
-                      Save
-                    </button>
-                    <button
-                      className="btn btn-dark"
-                      onClick={handleCloseAddForm}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
+                ))}
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-success"
+                  onClick={handleCreateNewRecord}
+                >
+                  Save
+                </button>
+                <button
+                  className="btn btn-dark"
+                  onClick={handleCloseAddForm}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           </div>
@@ -300,61 +256,44 @@ function VirtualRecords({
         <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog">
             <div className="modal-content">
-              <form onSubmit={handleSaveEditRecord}>
-                <div className="modal-header">
-                  <h5 className="modal-title">Edit Record {editingRecordId}</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={handleCloseEditForm}
-                  ></button>
-                </div>
-                <div className="modal-body" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  {metadataList.map(md => {
-                    const data = editRecordValues[md.id];
-                    return (
-                      <div key={md.id} className="mb-3">
-                        <label className="form-label">{md.fieldName}: </label>
-                        <input
-                          type={md.dataType === "NUMBER" ? "number" : "text"}
-                          className="form-control"
-                          value={
-                            md.dataType === "NUMBER"
-                              ? editRecordValues[md.id]?.value === "" // If empty, show empty input
-                                ? ""
-                                : parseFloat(editRecordValues[md.id]?.value) || 0 // Convert to number safely
-                              : editRecordValues[md.id]?.value || ""
-                          }
-                          onChange={(e) => {
-                            let newValue = e.target.value;
-                            if (md.dataType === "NUMBER") {
-                              newValue = newValue === "" ? "" : parseFloat(newValue); // Allow empty values
-                            }
-                            handleChangeEditValue(md.id, newValue);
-                          }}
-                          required={md.requiredField}
-                          maxLength={md.dataType === "TEXT" ? md.maxLength : undefined}
-                          max={md.dataType === "NUMBER" ? getMaxNumber(md.maxLength) : undefined}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="modal-footer">
-                  <button
-                    type="submit"
-                    className="btn btn-success"
-                  >
-                    Save
-                  </button>
-                  <button
-                    className="btn btn-dark"
-                    onClick={handleCloseEditForm}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+              <div className="modal-header">
+                <h5 className="modal-title">Edit Record {editingRecordId}</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={handleCloseEditForm}
+                ></button>
+              </div>
+              <div className="modal-body" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                {metadataList.map(md => {
+                  const data = editRecordValues[md.id];
+                  return (
+                    <div key={md.id} className="mb-3">
+                      <label className="form-label">{md.fieldName}: </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={data.value}
+                        onChange={e => handleChangeEditValue(md.id, e.target.value)}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-success"
+                  onClick={handleSaveEditRecord}
+                >
+                  Save
+                </button>
+                <button
+                  className="btn btn-dark"
+                  onClick={handleCloseEditForm}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -362,7 +301,7 @@ function VirtualRecords({
 
     </div>
   );
-
+  
 }
 
 const modalStyle = {
