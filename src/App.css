@@ -11,6 +11,21 @@ html, body {
   #form-section {
     order: 1; /* Move the form above the second table */
   }
+
+  br {
+    height: 2px;
+  }
+
+  .col-md-8 {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .col-md-3 {
+    width: 50% !important;
+    max-width: 50% !important;
+  }
+
   #table-section {
     order: 0;
   }

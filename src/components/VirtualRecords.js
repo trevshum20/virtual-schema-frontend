@@ -60,7 +60,8 @@ function VirtualRecords({
     }));
   };
 
-  const handleCreateNewRecord = () => {
+  const handleCreateNewRecord = (event) => {
+    event.preventDefault();
     // For demonstration, pick the next recordId (max + 1)
     const maxRecordId = recordIds.length === 0 ? 0 : Math.max(...recordIds);
     const newRecordId = maxRecordId + 1;
@@ -127,7 +128,8 @@ function VirtualRecords({
   };
 
   // Save Edited Record
-  const handleSaveEditRecord = async () => {
+  const handleSaveEditRecord = async (event) => {
+    event.preventDefault();
     if (isSubmitting) return; // Prevent duplicate submissions
     setIsSubmitting(true);
 

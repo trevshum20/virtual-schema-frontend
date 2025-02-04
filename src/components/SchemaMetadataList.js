@@ -19,7 +19,8 @@ function SchemaMetadataList({ metadataList, onCreateField, onDeleteField, onUpda
     : 'Unknown';
 
   // CREATE a new column
-  const handleCreateField = () => {
+  const handleCreateField = (event) => {
+    event.preventDefault();
     const newField = {
       objectName: objectName, // or dynamic if needed
       fieldName: newFieldName,
@@ -95,7 +96,7 @@ function SchemaMetadataList({ metadataList, onCreateField, onDeleteField, onUpda
         return;
       }
     }
-    
+
     // Proceed with normal update if there are no special conditions
     const updatedField = {
       objectName: objectName, // keep same object
@@ -105,7 +106,7 @@ function SchemaMetadataList({ metadataList, onCreateField, onDeleteField, onUpda
       maxLength: editMaxLength,
       createdByName: 'GuestUser' // or track the original, if needed
     };
-    
+
     // console.log(`>>> required: ${updatedField.requiredField}\nmax length: ${updatedField.maxLength}`);
 
     onUpdateField(md.id, updatedField)
@@ -278,9 +279,9 @@ function SchemaMetadataList({ metadataList, onCreateField, onDeleteField, onUpda
                   maxLength="255"
                 />
               </div>
-              <div className="d-flex gap-3" style={{ gap: "3rem" }}>
-                <div className="mb-3">
-                  <label className="form-label">Data Type</label><br></br>
+              <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div className="mb-3 flex-grow-1">
+                  <label className="form-label">Data Type</label><br />
                   <select
                     className="form-select"
                     value={newDataType}
@@ -290,8 +291,8 @@ function SchemaMetadataList({ metadataList, onCreateField, onDeleteField, onUpda
                     <option value="NUMBER">NUMBER</option>
                   </select>
                 </div>
-                <div className="mb-3">
-                  <label className="form-label">Required?</label><br></br>
+                <div className="mb-3 flex-grow-1">
+                  <label className="form-label">Required?</label><br />
                   <select
                     className="form-select"
                     value={newRequiredField}
@@ -302,14 +303,17 @@ function SchemaMetadataList({ metadataList, onCreateField, onDeleteField, onUpda
                   </select>
                 </div>
                 <div className="mb-3">
-                <label className="form-label">Max Length</label><br></br>
-                <input
-                  type="number"
-                  value={newMaxLength}
-                  onChange={e => setNewMaxLength(e.target.value)}
-                ></input>
+                  <label className="form-label">Max Length</label><br />
+                  <input
+                    type="number"
+                    value={newMaxLength}
+                    onChange={e => setNewMaxLength(e.target.value)}
+                    className="form-control"
+                    style={{ width: "90px" }}
+                  />
+                </div>
               </div>
-              </div>
+
               <button
                 type="button"
                 className="btn btn-success"

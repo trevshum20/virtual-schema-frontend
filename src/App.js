@@ -7,13 +7,6 @@ import Navbar from './components/Navbar';
 import VirtualSchemaManager from './components/VirtualSchemaManager';
 
 function App() {
-    // const [message, setMessage] = useState('');
-
-    // return (
-    //     <div>
-    //         <VirtualSchemaManager/>
-    //     </div>
-    // );
     return (
         <Router>
           <div style={{
