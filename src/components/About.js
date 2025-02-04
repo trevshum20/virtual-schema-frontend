@@ -9,7 +9,7 @@ const About = () => {
                     <h1 className="text-3xl font-bold text-center">About Virtual Schema Manager</h1>
                     <br />
                     <p>
-                        Virtual Schema Manager is a full-stack web application built with Java Spring Boot (Maven) on the backend and React on the frontend. It dynamically creates a virtual database
+                        Virtual Schema Manager is a full-stack web application built with Java Spring Boot on the backend and React on the frontend. It dynamically creates a virtual database
                         schema at runtime using metadata stored in a relational database, allowing users to flexibly create, edit, and delete both schema definitions and records without downtime.
                         This approach solves a real pain point around working with relational databases, combines relational and dynamic paradigms, and is technically interesting! It showcases my ability to solve complex
                         problems with innovative solutions.
@@ -17,6 +17,30 @@ const About = () => {
                     <br></br>
                     <br></br>
                     <div class="accordion" id="accordionPanelsStayOpenExample">
+                        <div class="accordion-item">
+                            <h4 class="accordion-header" id="panelsStayOpen-headingarch">
+                                <button
+                                    class="accordion-button collapsed"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#panelsStayOpen-collapsearch"
+                                    aria-expanded="false"
+                                    aria-controls="panelsStayOpen-collapsearch"
+                                >
+                                    Virtual Schema Manager AWS Architecture
+                                </button>
+                            </h4>
+                            <div
+                                id="panelsStayOpen-collapsearch"
+                                class="accordion-collapse collapse"
+                                aria-labelledby="panelsStayOpen-headingarch"
+                            >
+                                <div class="accordion-body d-flex justify-content-center">
+                                    <img src="design.jpeg" alt="Virtual Schema Manager AWS architecture" height="700"/>
+                                </div>
+                            </div>
+                        </div>
+                        <br></br>
                         <div class="accordion-item">
                             <h4 class="accordion-header" id="panelsStayOpen-headingWhy">
                                 <button
@@ -97,6 +121,8 @@ const About = () => {
                                         <li>add new columns</li>
                                         <li>rename existing columns</li>
                                         <li>update column data types</li>
+                                        <li>Make a column required</li>
+                                        <li>Change the max length of a text column</li>
                                     </ul>
                                     <p>
                                         Note: My code stores schema metadata behind the scenes in an RDS to
