@@ -5,6 +5,7 @@ import About from './components/About';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
 import VirtualSchemaManager from './components/VirtualSchemaManager';
+import LoginPage from './components/LoginPage';
 
 function App() {
     return (
@@ -18,6 +19,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<VirtualSchemaManager/>} />
                 <Route path="/about" element={<About />} />
+                <Route path="/login" element={<LoginPage/>}/>
               </Routes>
             </div>
             <Footer/>

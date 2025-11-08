@@ -1,19 +1,19 @@
-import axios from 'axios';
+import { api } from './client';
 
-const BASE_URL = process.env.REACT_APP_BACKEND_BASE_URL + '/api/schema-metadata';
+const ENDPOINT_URL = '/api/schema-metadata';
 
 export const getAllMetadata = () => {
-  return axios.get(BASE_URL, { withCredentials: true });
+  return api.get(ENDPOINT_URL);
 };
 
 export const createMetadata = (data) => {
-  return axios.post(BASE_URL, data, { withCredentials: true });
+  return api.post(ENDPOINT_URL, data);
 };
 
 export const updateMetadata = (id, data) => {
-  return axios.put(`${BASE_URL}/${id}`, data, { withCredentials: true });
+  return api.put(`${ENDPOINT_URL}/${id}`, data);
 };
 
 export const deleteMetadata = (id) => {
-  return axios.delete(`${BASE_URL}/${id}`, { withCredentials: true });
+  return api.delete(`${ENDPOINT_URL}/${id}`);
 };

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { api } from '../api/client';
 import React, { useEffect, useState } from 'react';
 import SchemaMetadataList from './SchemaMetadataList';
 import VirtualRecords from './VirtualRecords';
@@ -18,8 +18,8 @@ function VirtualSchemaManager() {
   const fetchAllData = () => {
     let newUrl = `${process.env.REACT_APP_BACKEND_BASE_URL}/login`;
     Promise.all([
-      axios.get(`${baseUrl}/api/schema-metadata`, { withCredentials: true }),
-      axios.get(`${baseUrl}/api/virtual-field-values`, { withCredentials: true })
+      api.get(`/api/schema-metadata`),
+      api.get(`/api/virtual-field-values`)
     ])
     .then(([metaRes, fvRes]) => {
       if (typeof metaRes.data === "string" && metaRes.data.includes("<!DOCTYPE html")) {
@@ -62,7 +62,7 @@ function VirtualSchemaManager() {
   // CRUD FOR SCHEMA METADATA
   // --------------
   const createSchemaField = (newField) => {
-    return axios.post(`${baseUrl}/api/schema-metadata`, newField, { withCredentials: true })
+    return api.post(`/api/schema-metadata`, newField)
       .then(() => {
         // Re-fetch or do a partial update
         fetchAllData();
@@ -70,7 +70,7 @@ function VirtualSchemaManager() {
   };
 
   const deleteSchemaField = (id) => {
-    return axios.delete(`${baseUrl}/api/schema-metadata/${id}`, { withCredentials: true })
+    return api.delete(`/api/schema-metadata/${id}`)
       .then(() => {
         fetchAllData();
       });
@@ -80,7 +80,7 @@ function VirtualSchemaManager() {
     // "id" is the primary key of the schema_metadata record
     // "updatedField" is an object containing the new values (objectName, fieldName, dataType, createdByName)
 
-    return axios.put(`${baseUrl}/api/schema-metadata/${id}`, updatedField, { withCredentials: true })
+    return api.put(`/api/schema-metadata/${id}`, updatedField)
       .then(() => {
         // After a successful update, refetch metadata to keep everything in sync
         fetchAllData();
@@ -95,35 +95,35 @@ function VirtualSchemaManager() {
   // CRUD FOR VIRTUAL FIELD VALUES
   // --------------
   const createVirtualFieldValue = (data) => {
-    return axios.post(`${baseUrl}/api/virtual-field-values`, data, { withCredentials: true })
+    return api.post(`/api/virtual-field-values`, data)
       .then(() => {
         fetchAllData();
       });
   };
 
   const updateVirtualFieldValue = (id, data) => {
-    return axios.put(`${baseUrl}/api/virtual-field-values/${id}`, data, { withCredentials: true })
+    return api.put(`/api/virtual-field-values/${id}`, data)
       .then(() => {
         fetchAllData();
       });
   };
 
   const deleteRecordById = (recordId) => {
-    return axios.delete(`${baseUrl}/api/virtual-field-values/record/${recordId}`, { withCredentials: true })
+    return api.delete(`/api/virtual-field-values/record/${recordId}`)
       .then(() => {
         fetchAllData();
       });
   };
 
   const changeDataTypeByMetadataId = (metadataId) => {
-    return axios.get(`${baseUrl}/api/virtual-field-values/mass-type-change/${metadataId}`, { withCredentials: true })
+    return api.get(`/api/virtual-field-values/mass-type-change/${metadataId}`)
       .then(() => {
         fetchAllData();
       });
   }
 
   const truncateFieldLengthByMetadataId = (metadataId, newLength) => {
-    return axios.get(`${baseUrl}/api/virtual-field-values/mass-truncate/${metadataId}/${newLength}`, { withCredentials: true })
+    return api.get(`/api/virtual-field-values/mass-truncate/${metadataId}/${newLength}`)
     .then(() => {
       fetchAllData();
     });
